@@ -1,6 +1,5 @@
-package com.weather.app
+package com.weather.app.weather
 
-import com.weather.app.weather.WeatherResponse
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
@@ -11,10 +10,10 @@ interface WeatherApiService {
     suspend fun getWeatherData(
         @Query("latitude") latitude: Double,
         @Query("longitude") longitude: Double,
-        @Query("current") currentParams: String = "temperature_2m,weather_code",
-        @Query("hourly") hourlyParams: String = "temperature_2m",
-        @Query("daily") dailyParams: String = "weather_code",
-        @Query("timezone") timezone: String = "auto"
+        @Query("current") currentParams: String = "temperature_2m,is_day,weather_code",
+        @Query("hourly") hourlyParams: String = "temperature_2m,weather_code,wind_speed_10m,wind_direction_10m",
+        @Query("daily") dailyParams: String = "weather_code,temperature_2m_max,temperature_2m_min",
+        @Query("timezone") timezone: String = "auto",
     ): WeatherResponse
 
     companion object {

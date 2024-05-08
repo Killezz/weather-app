@@ -14,27 +14,23 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.weather.app.weather.WeatherResponse
 import android.Manifest
-import android.location.Geocoder
-import java.util.Locale
-import kotlin.math.roundToInt
+import com.weather.app.weather.WeatherViewModel
+import com.weather.app.widget.DailyWeather
 
 @Composable
 fun HomeScreen() {
-    val weatherViewModel: WeatherViewModel = viewModel()
-    val weatherData by weatherViewModel.weatherData.observeAsState()
+    val viewModel: WeatherViewModel = viewModel()
+    val weatherData by viewModel.weatherData.observeAsState()
 
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions(),
         onResult = { permissions ->
             val allPermissionsGranted = permissions.entries.all { it.value }
             if (allPermissionsGranted) {
-                weatherViewModel.startLocationUpdates()
+                viewModel.startLocationUpdates()
             }
         }
     )
@@ -47,6 +43,7 @@ fun HomeScreen() {
             )
         )
     }
+
     if (weatherData == null) {
         Column(
             verticalArrangement = Arrangement.Center,
@@ -56,32 +53,7 @@ fun HomeScreen() {
             CircularProgressIndicator(modifier = Modifier.size(50.dp))
         }
     } else {
-        CurrentWeather(weatherData!!)
+        DailyWeather(viewModel = viewModel, weatherData = weatherData!!)
     }
 }
 
-@Composable
-fun CurrentWeather(weather: WeatherResponse) {
-    Column(
-        verticalArrangement = Arrangement.Top,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        CurrentCity(latitude = weather.latitude, longitude = weather.longitude)
-        Text(
-            text = "${(weather.current.temperature).roundToInt()}°",
-            fontSize = 70.sp, modifier = Modifier.padding(10.dp)
-        )
-    }
-}
-
-@Suppress("DEPRECATION")
-@Composable
-fun CurrentCity(latitude: Double, longitude: Double) {
-    val geocoder = Geocoder(LocalContext.current, Locale.getDefault())
-    val address = geocoder.getFromLocation(latitude, longitude, 1)
-    val city = address?.first()?.locality?.toString() ?: "Unknown city"
-    Text(
-        text = city, fontSize = 30.sp, modifier =
-        Modifier.padding(top = 70.dp)
-    )
-}
