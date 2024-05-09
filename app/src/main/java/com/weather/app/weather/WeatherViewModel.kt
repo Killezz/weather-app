@@ -9,6 +9,9 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.weather.app.LocationRepository
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class WeatherViewModel(application: Application) : AndroidViewModel(application) {
     private val apiService = WeatherApiService.create()
@@ -58,4 +61,49 @@ class WeatherViewModel(application: Application) : AndroidViewModel(application)
         }
     }
 
+    fun generateDailyWeatherData(weatherResponse: WeatherResponse): List<DailyWeatherData> {
+        val weatherDataList = mutableListOf<DailyWeatherData>()
+        val dateFormatter = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        val dateTimeFormatter = SimpleDateFormat("yyyy-MM-dd'T'HH:mm", Locale.getDefault())
+        val currentDate = Date()
+        for (dayIndex in weatherResponse.daily.time.indices) {
+            val date = dateFormatter.parse(weatherResponse.daily.time[dayIndex])
+            if (date != null) {
+                val day = if (date <= currentDate) {
+                    "Today"
+                } else {
+                    SimpleDateFormat("EEE dd.MM.", Locale.getDefault()).format(date)
+                }
+                val hourlyDataList = mutableListOf<DailyHourlyData>()
+                for (hourIndex in weatherResponse.hourly.time.indices) {
+                    val hourlyDate = dateTimeFormatter.parse(weatherResponse.hourly.time[hourIndex])
+                    if (hourlyDate != null && dateFormatter.format(hourlyDate) == dateFormatter.format(
+                            date
+                        )
+                    ) {
+                        if (hourlyDate.before(currentDate)) {
+                            continue
+                        }
+                        val hour = SimpleDateFormat("HH:mm", Locale.getDefault()).format(hourlyDate)
+                        val hourlyData = DailyHourlyData(
+                            hour = hour,
+                            weatherCode = weatherResponse.hourly.weatherCode[hourIndex],
+                            windDirection = weatherResponse.hourly.windDirection[hourIndex].toInt(),
+                            windSpeedMs = weatherResponse.hourly.windSpeed[hourIndex].toInt()
+                        )
+                        hourlyDataList.add(hourlyData)
+                    }
+                }
+                val weatherData = DailyWeatherData(
+                    day = day,
+                    minTemperature = weatherResponse.daily.minTemperature[dayIndex].toInt(),
+                    maxTemperature = weatherResponse.daily.maxTemperature[dayIndex].toInt(),
+                    weatherCode = weatherResponse.daily.weatherCode[dayIndex],
+                    hourlyData = hourlyDataList
+                )
+                weatherDataList.add(weatherData)
+            }
+        }
+        return weatherDataList
+    }
 }

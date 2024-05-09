@@ -33,3 +33,18 @@ data class Daily(
     val time: List<String>,
     @SerializedName("weather_code") val weatherCode: List<Int>,
 )
+
+data class DailyWeatherData(
+    val day: String,
+    val minTemperature: Int,
+    val maxTemperature: Int,
+    val weatherCode: Int,
+    val hourlyData: List<DailyHourlyData>
+)
+
+data class DailyHourlyData(
+    val hour: String,
+    val weatherCode: Int,
+    val windDirection: Int,
+    val windSpeedMs: Int
+)

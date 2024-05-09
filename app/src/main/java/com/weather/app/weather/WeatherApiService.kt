@@ -14,6 +14,7 @@ interface WeatherApiService {
         @Query("hourly") hourlyParams: String = "temperature_2m,weather_code,wind_speed_10m,wind_direction_10m",
         @Query("daily") dailyParams: String = "weather_code,temperature_2m_max,temperature_2m_min",
         @Query("timezone") timezone: String = "auto",
+        @Query("wind_speed_unit") windSpeed: String = "ms"
     ): WeatherResponse
 
     companion object {
