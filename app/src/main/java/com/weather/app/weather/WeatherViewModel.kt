@@ -3,6 +3,7 @@ package com.weather.app.weather
 import android.app.Application
 import android.location.Location
 import android.util.Log
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
@@ -19,6 +20,7 @@ class WeatherViewModel(application: Application) : AndroidViewModel(application)
     private val locationRepository = LocationRepository(application)
     private val _location = mutableStateOf<Location?>(null)
     val weatherData: MutableLiveData<WeatherResponse?> = _weatherData
+    val activeDay = mutableIntStateOf(0)
 
     private fun fetchWeatherData(latitude: Double, longitude: Double) {
         viewModelScope.launch {
@@ -87,6 +89,7 @@ class WeatherViewModel(application: Application) : AndroidViewModel(application)
                         val hour = SimpleDateFormat("HH:mm", Locale.getDefault()).format(hourlyDate)
                         val hourlyData = DailyHourlyData(
                             hour = hour,
+                            temperature = weatherResponse.hourly.temperature[hourIndex].toInt(),
                             weatherCode = weatherResponse.hourly.weatherCode[hourIndex],
                             windDirection = weatherResponse.hourly.windDirection[hourIndex].toInt(),
                             windSpeedMs = weatherResponse.hourly.windSpeed[hourIndex].toInt()

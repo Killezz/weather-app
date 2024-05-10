@@ -39,12 +39,13 @@ data class DailyWeatherData(
     val minTemperature: Int,
     val maxTemperature: Int,
     val weatherCode: Int,
-    val hourlyData: List<DailyHourlyData>
+    val hourlyData: List<DailyHourlyData>,
 )
 
 data class DailyHourlyData(
     val hour: String,
+    val temperature: Int,
     val weatherCode: Int,
     val windDirection: Int,
-    val windSpeedMs: Int
+    val windSpeedMs: Int,
 )

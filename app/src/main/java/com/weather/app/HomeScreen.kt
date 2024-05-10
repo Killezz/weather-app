@@ -1,5 +1,6 @@
 package com.weather.app
 
+import android.Manifest
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -16,7 +17,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import android.Manifest
 import com.weather.app.weather.WeatherViewModel
 import com.weather.app.widget.DailyWeather
 
@@ -53,7 +53,7 @@ fun HomeScreen() {
             CircularProgressIndicator(modifier = Modifier.size(50.dp))
         }
     } else {
-        DailyWeather(viewModel = viewModel, weatherData = weatherData!!)
+        DailyWeather(weatherData = weatherData!!)
     }
 }
 

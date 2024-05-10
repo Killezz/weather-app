@@ -3,17 +3,19 @@ package com.weather.app.widget
 import android.location.Geocoder
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -22,10 +24,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.TransformOrigin
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.weather.app.weather.DailyHourlyData
 import com.weather.app.weather.DailyWeatherData
 import com.weather.app.weather.WeatherResponse
 import com.weather.app.weather.WeatherViewModel
@@ -33,7 +39,8 @@ import java.util.Locale
 import kotlin.math.roundToInt
 
 @Composable
-fun DailyWeather(viewModel: WeatherViewModel, weatherData: WeatherResponse) {
+fun DailyWeather(weatherData: WeatherResponse) {
+    val viewModel: WeatherViewModel = viewModel()
     Column {
         Column(
             verticalArrangement = Arrangement.Top,
@@ -45,20 +52,18 @@ fun DailyWeather(viewModel: WeatherViewModel, weatherData: WeatherResponse) {
             CurrentCity(latitude = weatherData.latitude, longitude = weatherData.longitude)
             Text(
                 text = viewModel.weatherCodeToEmoji(weatherData.current.weatherCode),
-                fontSize = 120.sp,
-                modifier = Modifier.padding(top = 20.dp)
+                fontSize = 120.sp
             )
             Row(
                 modifier = Modifier
-                    .padding(top = 30.dp)
                     .fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
                     text = "${(weatherData.current.temperature).roundToInt()}°",
-                    fontSize = 90.sp, fontWeight = FontWeight(500)
+                    fontSize = 90.sp, fontWeight = FontWeight.Bold
                 )
-                Spacer(modifier = Modifier.weight(1f))
                 Column {
                     Text(
                         text = "↑ ${(weatherData.daily.maxTemperature.first()).roundToInt()}°",
@@ -71,7 +76,7 @@ fun DailyWeather(viewModel: WeatherViewModel, weatherData: WeatherResponse) {
                 }
             }
         }
-        DailyWeatherRow(viewModel, weatherData)
+        DailyWeatherRow(weatherData)
     }
 }
 
@@ -87,45 +92,72 @@ fun CurrentCity(latitude: Double, longitude: Double) {
 }
 
 @Composable
-fun DailyWeatherRow(viewModel: WeatherViewModel, data: WeatherResponse) {
+fun DailyWeatherRow(data: WeatherResponse) {
+    val viewModel: WeatherViewModel = viewModel()
     val weatherDataList by remember { mutableStateOf(viewModel.generateDailyWeatherData(data)) }
-    LazyRow(
-        modifier = Modifier
-            .padding(top = 5.dp),
-        contentPadding = PaddingValues(horizontal = 10.dp),
-        horizontalArrangement = Arrangement.spacedBy(10.dp)
-    ) {
-        items(weatherDataList.size) { index ->
-            val weatherData = weatherDataList[index]
-            WeatherBox(weatherData, viewModel.weatherCodeToEmoji(weatherData.weatherCode))
+    Column {
+        LazyRow(
+            modifier = Modifier
+                .padding(top = 5.dp),
+            contentPadding = PaddingValues(horizontal = 10.dp),
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            items(weatherDataList.size) { index ->
+                val weatherData = weatherDataList[index]
+                WeatherCard(
+                    weatherData,
+                    index
+                )
+            }
+        }
+        LazyColumn(
+            modifier = Modifier
+                .padding(top = 5.dp),
+            contentPadding = PaddingValues(horizontal = 10.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            items(weatherDataList[viewModel.activeDay.intValue].hourlyData.size) { index ->
+                val hourlyData = weatherDataList[viewModel.activeDay.intValue].hourlyData[index]
+                HourlyWeatherCard(
+                    hourlyData
+                )
+            }
         }
     }
 }
 
 @Composable
-fun WeatherBox(weatherData: DailyWeatherData, weatherEmoji: String) {
-    Box(
+fun WeatherCard(weatherData: DailyWeatherData, id: Int) {
+    val viewModel: WeatherViewModel = viewModel()
+    Card(
         modifier = Modifier
             .width(150.dp)
-            .border(2.dp, Color.Gray, RoundedCornerShape(10)),
-
-        ) {
+            .border(2.dp, Color.Gray, RoundedCornerShape(10))
+            .clickable { viewModel.activeDay.intValue = id },
+        colors = CardDefaults.cardColors(
+            containerColor = if (id == viewModel.activeDay.intValue) Color(
+                252,
+                224,
+                190,
+                255
+            ) else Color.White
+        ),
+    ) {
         Column(
             modifier = Modifier.padding(8.dp)
         ) {
             Text(
                 text = weatherData.day,
                 color = Color.Black,
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold
+                fontSize = 18.sp
             )
             Row(
                 modifier = Modifier
-                    .padding(top = 10.dp),
-                verticalAlignment = Alignment.CenterVertically
+                    .fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceAround
             ) {
-                Text(text = weatherEmoji, fontSize = 50.sp)
-                Spacer(modifier = Modifier.weight(1f))
+                Text(text = viewModel.weatherCodeToEmoji(weatherData.weatherCode), fontSize = 50.sp)
                 Column {
                     Text(
                         text = "↑ ${weatherData.maxTemperature}°",
@@ -136,6 +168,63 @@ fun WeatherBox(weatherData: DailyWeatherData, weatherEmoji: String) {
                         fontSize = 25.sp, color = Color(47, 116, 255, 255)
                     )
                 }
+            }
+        }
+    }
+}
+
+
+@Composable
+fun HourlyWeatherCard(hourlyData: DailyHourlyData) {
+    val viewModel: WeatherViewModel = viewModel()
+
+    Card(
+        modifier = Modifier
+            .border(2.dp, Color.Gray, RoundedCornerShape(10)),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White
+        ),
+    ) {
+        Column(
+            modifier = Modifier.padding(8.dp)
+        ) {
+            Text(
+                text = hourlyData.hour,
+                color = Color.Black,
+                fontSize = 18.sp
+            )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceAround,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "${hourlyData.temperature}°",
+                    fontSize = 35.sp, fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = viewModel.weatherCodeToEmoji(hourlyData.weatherCode),
+                    fontSize = 50.sp
+                )
+                Column(
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "➤", fontSize = 30.sp,
+                        modifier = Modifier
+                            .graphicsLayer {
+                                rotationZ = -90f + hourlyData.windDirection.toFloat()
+                                transformOrigin = TransformOrigin.Center
+                            },
+                    )
+                    Text(
+                        text = "${hourlyData.windSpeedMs} m/s",
+                        fontSize = 20.sp
+                    )
+                }
+
             }
         }
     }
