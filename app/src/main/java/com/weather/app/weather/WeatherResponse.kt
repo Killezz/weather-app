@@ -25,6 +25,7 @@ data class Hourly(
     @SerializedName("wind_speed_10m") val windSpeed: List<Double>,
     @SerializedName("wind_direction_10m") val windDirection: List<Double>,
     @SerializedName("weather_code") val weatherCode: List<Int>,
+    @SerializedName("is_day") val isDay: List<Int>,
 )
 
 data class Daily(
@@ -48,4 +49,5 @@ data class DailyHourlyData(
     val weatherCode: Int,
     val windDirection: Int,
     val windSpeedMs: Int,
+    val isDay: Int,
 )

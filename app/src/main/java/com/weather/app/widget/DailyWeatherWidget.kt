@@ -1,6 +1,7 @@
 package com.weather.app.widget
 
 import android.location.Geocoder
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -9,6 +10,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -46,13 +48,19 @@ fun DailyWeather(weatherData: WeatherResponse) {
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
-                .background(Color(252, 224, 190, 255))
+                .background(Color(230, 242, 252, 255))
                 .padding(all = 20.dp),
         ) {
             CurrentCity(latitude = weatherData.latitude, longitude = weatherData.longitude)
-            Text(
-                text = viewModel.weatherCodeToEmoji(weatherData.current.weatherCode),
-                fontSize = 120.sp
+            Image(
+                painter = viewModel.weatherCodeToImage(
+                    weatherData.current.weatherCode,
+                    weatherData.current.isDay
+                ),
+                contentDescription = "Weather icon",
+                modifier = Modifier
+                    .padding(top = 15.dp)
+                    .height(150.dp)
             )
             Row(
                 modifier = Modifier
@@ -64,16 +72,6 @@ fun DailyWeather(weatherData: WeatherResponse) {
                     text = "${(weatherData.current.temperature).roundToInt()}°",
                     fontSize = 90.sp, fontWeight = FontWeight.Bold
                 )
-                Column {
-                    Text(
-                        text = "↑ ${(weatherData.daily.maxTemperature.first()).roundToInt()}°",
-                        fontSize = 30.sp, color = Color(255, 0, 0, 255)
-                    )
-                    Text(
-                        text = "↓ ${(weatherData.daily.minTemperature.first()).roundToInt()}°",
-                        fontSize = 30.sp, color = Color(47, 116, 255, 255)
-                    )
-                }
             }
         }
         DailyWeatherRow(weatherData)
@@ -112,7 +110,7 @@ fun DailyWeatherRow(data: WeatherResponse) {
         }
         LazyColumn(
             modifier = Modifier
-                .padding(top = 5.dp),
+                .padding(top = 5.dp, bottom = 5.dp),
             contentPadding = PaddingValues(horizontal = 10.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
@@ -132,13 +130,13 @@ fun WeatherCard(weatherData: DailyWeatherData, id: Int) {
     Card(
         modifier = Modifier
             .width(150.dp)
-            .border(2.dp, Color.Gray, RoundedCornerShape(10))
+            .border(1.dp, Color.Gray, RoundedCornerShape(10))
             .clickable { viewModel.activeDay.intValue = id },
         colors = CardDefaults.cardColors(
             containerColor = if (id == viewModel.activeDay.intValue) Color(
+                230,
+                242,
                 252,
-                224,
-                190,
                 255
             ) else Color.White
         ),
@@ -157,7 +155,11 @@ fun WeatherCard(weatherData: DailyWeatherData, id: Int) {
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceAround
             ) {
-                Text(text = viewModel.weatherCodeToEmoji(weatherData.weatherCode), fontSize = 50.sp)
+                Image(
+                    painter = viewModel.weatherCodeToImage(weatherData.weatherCode, 1),
+                    contentDescription = "Weather icon",
+                    modifier = Modifier.height(50.dp)
+                )
                 Column {
                     Text(
                         text = "↑ ${weatherData.maxTemperature}°",
@@ -180,7 +182,7 @@ fun HourlyWeatherCard(hourlyData: DailyHourlyData) {
 
     Card(
         modifier = Modifier
-            .border(2.dp, Color.Gray, RoundedCornerShape(10)),
+            .border(1.dp, Color.Gray, RoundedCornerShape(10)),
         colors = CardDefaults.cardColors(
             containerColor = Color.White
         ),
@@ -203,9 +205,13 @@ fun HourlyWeatherCard(hourlyData: DailyHourlyData) {
                     text = "${hourlyData.temperature}°",
                     fontSize = 35.sp, fontWeight = FontWeight.Bold
                 )
-                Text(
-                    text = viewModel.weatherCodeToEmoji(hourlyData.weatherCode),
-                    fontSize = 50.sp
+                Image(
+                    painter = viewModel.weatherCodeToImage(
+                        hourlyData.weatherCode,
+                        hourlyData.isDay
+                    ),
+                    contentDescription = "Weather icon",
+                    modifier = Modifier.height(50.dp)
                 )
                 Column(
                     verticalArrangement = Arrangement.Center,

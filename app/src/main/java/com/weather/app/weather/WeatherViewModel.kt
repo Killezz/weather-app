@@ -3,12 +3,16 @@ package com.weather.app.weather
 import android.app.Application
 import android.location.Location
 import android.util.Log
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.res.painterResource
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.weather.app.LocationRepository
+import com.weather.app.R
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -46,20 +50,18 @@ class WeatherViewModel(application: Application) : AndroidViewModel(application)
         }
     }
 
-    fun weatherCodeToEmoji(weatherCode: Int = -1): String {
+    @Composable
+    fun weatherCodeToImage(weatherCode: Int = -1, isDay: Int): Painter {
         return when (weatherCode) {
-            0 -> "☀️"
-            in 1..3 -> "☁️"
-            in listOf(45, 48) -> "🌫️"
-            in listOf(51, 53, 55) -> "🌧️"
-            in listOf(56, 57) -> "❄️"
-            in listOf(61, 63, 65, 77) -> "🌧️"
-            in listOf(66, 67) -> "❄️"
-            in listOf(71, 73, 75) -> "🌨️"
-            in listOf(80, 81, 82) -> "🌧️"
-            in listOf(85, 86) -> "🌨️"
-            in listOf(95, 96, 99) -> "⛈️"
-            else -> "❓"
+            0 -> painterResource(id = if (isDay == 1) R.drawable.clear_day else R.drawable.clear_night)
+            in 1..2 -> painterResource(id = if (isDay == 1) R.drawable.mainly_clear_day else R.drawable.mainly_clear_night)
+            3 -> painterResource(id = R.drawable.overcast)
+            in listOf(45, 48) -> painterResource(id = R.drawable.fog)
+            in listOf(51, 53, 55, 56, 57) -> painterResource(id = R.drawable.drizzle)
+            in listOf(61, 63, 65, 66, 67, 77, 80, 81, 82) -> painterResource(id = R.drawable.rain)
+            in listOf(71, 73, 75, 85, 86) -> painterResource(id = R.drawable.snow_fall)
+            in listOf(95, 96, 99) -> painterResource(id = R.drawable.thunderstorm)
+            else -> painterResource(id = R.drawable.unknown_weather)
         }
     }
 
@@ -92,7 +94,8 @@ class WeatherViewModel(application: Application) : AndroidViewModel(application)
                             temperature = weatherResponse.hourly.temperature[hourIndex].toInt(),
                             weatherCode = weatherResponse.hourly.weatherCode[hourIndex],
                             windDirection = weatherResponse.hourly.windDirection[hourIndex].toInt(),
-                            windSpeedMs = weatherResponse.hourly.windSpeed[hourIndex].toInt()
+                            windSpeedMs = weatherResponse.hourly.windSpeed[hourIndex].toInt(),
+                            isDay = weatherResponse.hourly.isDay[hourIndex]
                         )
                         hourlyDataList.add(hourlyData)
                     }

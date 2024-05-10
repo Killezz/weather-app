@@ -11,10 +11,10 @@ interface WeatherApiService {
         @Query("latitude") latitude: Double,
         @Query("longitude") longitude: Double,
         @Query("current") currentParams: String = "temperature_2m,is_day,weather_code",
-        @Query("hourly") hourlyParams: String = "temperature_2m,weather_code,wind_speed_10m,wind_direction_10m",
+        @Query("hourly") hourlyParams: String = "temperature_2m,weather_code,wind_speed_10m,wind_direction_10m,is_day",
         @Query("daily") dailyParams: String = "weather_code,temperature_2m_max,temperature_2m_min",
         @Query("timezone") timezone: String = "auto",
-        @Query("wind_speed_unit") windSpeed: String = "ms"
+        @Query("wind_speed_unit") windSpeed: String = "ms",
     ): WeatherResponse
 
     companion object {
