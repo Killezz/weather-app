@@ -1,13 +1,17 @@
 package com.weather.app.weather
 
 import android.app.Application
+import android.location.Geocoder
 import android.location.Location
 import android.util.Log
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
@@ -38,6 +42,17 @@ class WeatherViewModel(application: Application) : AndroidViewModel(application)
                 Log.d("WeatherViewModel", "Error: $e")
             }
         }
+    }
+
+    @Suppress("DEPRECATION")
+    @Composable
+    fun CurrentCity(latitude: Double, longitude: Double) {
+        val geocoder = Geocoder(LocalContext.current, Locale.getDefault())
+        val address = geocoder.getFromLocation(latitude, longitude, 1)
+        val city = address?.first()?.locality?.toString() ?: "Unknown city"
+        Text(
+            text = city, fontSize = 30.sp
+        )
     }
 
     fun startLocationUpdates() {

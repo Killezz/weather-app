@@ -1,6 +1,5 @@
 package com.weather.app.widget
 
-import android.location.Geocoder
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -25,7 +24,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -36,7 +34,6 @@ import com.weather.app.weather.DailyHourlyData
 import com.weather.app.weather.DailyWeatherData
 import com.weather.app.weather.WeatherResponse
 import com.weather.app.weather.WeatherViewModel
-import java.util.Locale
 import kotlin.math.roundToInt
 
 @Composable
@@ -50,7 +47,10 @@ fun DailyWeather(weatherData: WeatherResponse) {
                 .background(Color(230, 242, 252, 255))
                 .padding(all = 20.dp),
         ) {
-            CurrentCity(latitude = weatherData.latitude, longitude = weatherData.longitude)
+            viewModel.CurrentCity(
+                latitude = weatherData.latitude,
+                longitude = weatherData.longitude
+            )
             Image(
                 painter = viewModel.weatherCodeToImage(
                     weatherData.current.weatherCode,
@@ -75,17 +75,6 @@ fun DailyWeather(weatherData: WeatherResponse) {
         }
         DailyWeatherRow(weatherData)
     }
-}
-
-@Suppress("DEPRECATION")
-@Composable
-fun CurrentCity(latitude: Double, longitude: Double) {
-    val geocoder = Geocoder(LocalContext.current, Locale.getDefault())
-    val address = geocoder.getFromLocation(latitude, longitude, 1)
-    val city = address?.first()?.locality?.toString() ?: "Unknown city"
-    Text(
-        text = city, fontSize = 30.sp
-    )
 }
 
 @Composable
