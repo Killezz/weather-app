@@ -6,6 +6,7 @@ import android.location.Location
 import android.util.Log
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.painter.Painter
@@ -28,16 +29,20 @@ class WeatherViewModel(application: Application) : AndroidViewModel(application)
     private val _weatherData = MutableLiveData<WeatherResponse?>()
     private val locationRepository = LocationRepository(application)
     private val _location = mutableStateOf<Location?>(null)
+    private val _temperatureUnit = mutableStateOf("celsius")
     val snackbarManager = SnackbarManager()
     val weatherData: MutableLiveData<WeatherResponse?> = _weatherData
     val activeDay = mutableIntStateOf(0)
+    val temperatureUnit: State<String>
+        get() = _temperatureUnit
 
-    private fun fetchWeatherData(latitude: Double, longitude: Double) {
+    private fun fetchWeatherData(latitude: Double, longitude: Double, temperatureUnit: String) {
         viewModelScope.launch {
             try {
                 val response = apiService.getWeatherData(
                     latitude,
-                    longitude
+                    longitude,
+                    temperatureUnit
                 )
                 _weatherData.value = response
             } catch (e: Exception) {
@@ -64,7 +69,7 @@ class WeatherViewModel(application: Application) : AndroidViewModel(application)
         locationRepository.startLocationUpdates { location ->
             _location.value = location
             if (location != null) {
-                fetchWeatherData(location.latitude, location.longitude)
+                fetchWeatherData(location.latitude, location.longitude, _temperatureUnit.value)
             }
 
         }
@@ -131,5 +136,15 @@ class WeatherViewModel(application: Application) : AndroidViewModel(application)
             }
         }
         return weatherDataList
+    }
+
+    fun saveSettings(temperatureUnit: String) {
+        _temperatureUnit.value = temperatureUnit
+        fetchWeatherData(
+            _location.value!!.latitude,
+            _location.value!!.longitude,
+            _temperatureUnit.value
+        )
+
     }
 }

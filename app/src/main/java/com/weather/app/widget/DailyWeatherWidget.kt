@@ -5,21 +5,33 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.KeyboardArrowDown
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
@@ -73,14 +85,14 @@ fun DailyWeather(weatherData: WeatherResponse) {
                 )
             }
         }
-        DailyWeatherRow(weatherData)
+        DailyWeatherRow(weatherData, viewModel)
     }
+    SettingsPopup(viewModel)
 }
 
 @Composable
-fun DailyWeatherRow(data: WeatherResponse) {
-    val viewModel: WeatherViewModel = viewModel()
-    val weatherDataList by remember { mutableStateOf(viewModel.generateDailyWeatherData(data)) }
+fun DailyWeatherRow(data: WeatherResponse, viewModel: WeatherViewModel) {
+    val weatherDataList = remember(data) { viewModel.generateDailyWeatherData(data) }
     Column {
         LazyRow(
             modifier = Modifier
@@ -88,10 +100,10 @@ fun DailyWeatherRow(data: WeatherResponse) {
             contentPadding = PaddingValues(horizontal = 10.dp),
             horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            items(weatherDataList.size) { index ->
-                val weatherData = weatherDataList[index]
+            itemsIndexed(weatherDataList) { index, weatherData ->
                 WeatherCard(
                     weatherData,
+                    viewModel,
                     index
                 )
             }
@@ -100,21 +112,17 @@ fun DailyWeatherRow(data: WeatherResponse) {
             modifier = Modifier
                 .padding(top = 10.dp, bottom = 10.dp),
             contentPadding = PaddingValues(horizontal = 10.dp),
-            horizontalArrangement = Arrangement.spacedBy(5.dp)
+            horizontalArrangement = Arrangement.spacedBy(5.dp),
         ) {
-            items(weatherDataList[viewModel.activeDay.intValue].hourlyData.size) { index ->
-                val hourlyData = weatherDataList[viewModel.activeDay.intValue].hourlyData[index]
-                HourlyWeatherCard(
-                    hourlyData
-                )
+            items(weatherDataList[viewModel.activeDay.intValue].hourlyData) { hourlyData ->
+                HourlyWeatherCard(hourlyData, viewModel)
             }
         }
     }
 }
 
 @Composable
-fun WeatherCard(weatherData: DailyWeatherData, id: Int) {
-    val viewModel: WeatherViewModel = viewModel()
+fun WeatherCard(weatherData: DailyWeatherData, viewModel: WeatherViewModel, id: Int) {
     Card(
         modifier = Modifier
             .border(1.dp, Color.Gray, RoundedCornerShape(10))
@@ -165,14 +173,12 @@ fun WeatherCard(weatherData: DailyWeatherData, id: Int) {
 
 
 @Composable
-fun HourlyWeatherCard(hourlyData: DailyHourlyData) {
-    val viewModel: WeatherViewModel = viewModel()
-
+fun HourlyWeatherCard(hourlyData: DailyHourlyData, viewModel: WeatherViewModel) {
     Card(
         modifier = Modifier
             .border(1.dp, Color.Gray, RoundedCornerShape(10)),
         colors = CardDefaults.cardColors(
-            containerColor = Color.White
+            containerColor = Color.White,
         ),
     ) {
         Column(
@@ -209,6 +215,104 @@ fun HourlyWeatherCard(hourlyData: DailyHourlyData) {
             Text(
                 text = "${hourlyData.windSpeedMs} m/s",
                 fontSize = 20.sp
+            )
+        }
+    }
+}
+
+@Composable
+fun SettingsPopup(viewModel: WeatherViewModel) {
+    var showModal by remember { mutableStateOf(false) }
+    val selectedTemperatureUnit = remember { mutableStateOf(viewModel.temperatureUnit.value) }
+    val expandedState = remember { mutableStateOf(false) }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(top = 5.dp, end = 10.dp),
+        contentAlignment = Alignment.TopEnd
+    ) {
+        Image(
+            painter = painterResource(id = R.drawable.settings),
+            contentDescription = "Settings icon",
+            modifier = Modifier
+                .padding(5.dp)
+                .height(30.dp)
+                .clickable { showModal = true }
+        )
+
+        if (showModal) {
+            AlertDialog(
+                title = {
+                    Text(text = "Settings")
+                },
+                text = {
+                    Column {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(text = "Temperature unit: ")
+                            Column {
+                                Box(
+                                    modifier = Modifier
+                                        .clickable { expandedState.value = true }
+                                        .border(
+                                            1.dp,
+                                            Color.Gray,
+                                            shape = RoundedCornerShape(5.dp)
+                                        )
+                                        .padding(5.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Row {
+                                        Text(text = selectedTemperatureUnit.value)
+                                        Icon(
+                                            imageVector = Icons.Outlined.KeyboardArrowDown,
+                                            contentDescription = "Dropdown Icon"
+                                        )
+                                    }
+                                }
+                                DropdownMenu(
+                                    expanded = expandedState.value,
+                                    onDismissRequest = { expandedState.value = false },
+                                ) {
+                                    DropdownMenuItem(text = {
+                                        Text("celsius")
+                                    }, onClick = {
+                                        selectedTemperatureUnit.value = "celsius"
+                                        expandedState.value = false
+                                    })
+                                    DropdownMenuItem(text = {
+                                        Text("fahrenheit")
+                                    }, onClick = {
+                                        selectedTemperatureUnit.value = "fahrenheit"
+                                        expandedState.value = false
+                                    })
+                                }
+                            }
+                        }
+                    }
+                },
+                onDismissRequest = {
+                    showModal = false
+                },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            viewModel.saveSettings(selectedTemperatureUnit.value)
+                            showModal = false
+                        }
+                    ) {
+                        Text("Save")
+                    }
+                },
+                dismissButton = {
+                    TextButton(
+                        onClick = {
+                            showModal = false
+                        }
+                    ) {
+                        Text("Close")
+                    }
+                }
             )
         }
     }

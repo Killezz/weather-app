@@ -10,6 +10,7 @@ interface WeatherApiService {
     suspend fun getWeatherData(
         @Query("latitude") latitude: Double,
         @Query("longitude") longitude: Double,
+        @Query("temperature_unit") temperatureUnit: String,
         @Query("current") currentParams: String = "temperature_2m,is_day,weather_code",
         @Query("hourly") hourlyParams: String = "temperature_2m,weather_code,wind_speed_10m,wind_direction_10m,is_day",
         @Query("daily") dailyParams: String = "weather_code,temperature_2m_max,temperature_2m_min",
