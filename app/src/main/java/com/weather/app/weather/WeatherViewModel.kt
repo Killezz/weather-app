@@ -17,6 +17,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.weather.app.LocationRepository
 import com.weather.app.R
+import com.weather.app.SnackbarManager
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -27,6 +28,7 @@ class WeatherViewModel(application: Application) : AndroidViewModel(application)
     private val _weatherData = MutableLiveData<WeatherResponse?>()
     private val locationRepository = LocationRepository(application)
     private val _location = mutableStateOf<Location?>(null)
+    val snackbarManager = SnackbarManager()
     val weatherData: MutableLiveData<WeatherResponse?> = _weatherData
     val activeDay = mutableIntStateOf(0)
 
@@ -40,6 +42,9 @@ class WeatherViewModel(application: Application) : AndroidViewModel(application)
                 _weatherData.value = response
             } catch (e: Exception) {
                 Log.d("WeatherViewModel", "Error: $e")
+                viewModelScope.launch {
+                    snackbarManager.showSnackbar("${e.message}\n\nTrying again in 1 minute.")
+                }
             }
         }
     }
