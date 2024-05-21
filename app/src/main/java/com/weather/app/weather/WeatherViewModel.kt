@@ -18,6 +18,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.weather.app.LocationRepository
 import com.weather.app.R
+import com.weather.app.SharedPreferencesUtils
 import com.weather.app.SnackbarManager
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -29,7 +30,8 @@ class WeatherViewModel(application: Application) : AndroidViewModel(application)
     private val _weatherData = MutableLiveData<WeatherResponse?>()
     private val locationRepository = LocationRepository(application)
     private val _location = mutableStateOf<Location?>(null)
-    private val _temperatureUnit = mutableStateOf("celsius")
+    private val _temperatureUnit =
+        mutableStateOf(SharedPreferencesUtils.getTemperatureUnit(application))
     val snackbarManager = SnackbarManager()
     val weatherData: MutableLiveData<WeatherResponse?> = _weatherData
     val activeDay = mutableIntStateOf(0)
@@ -138,13 +140,19 @@ class WeatherViewModel(application: Application) : AndroidViewModel(application)
         return weatherDataList
     }
 
-    fun saveSettings(temperatureUnit: String) {
-        _temperatureUnit.value = temperatureUnit
-        fetchWeatherData(
-            _location.value!!.latitude,
-            _location.value!!.longitude,
-            _temperatureUnit.value
-        )
-
+    fun saveSettings(temperatureUnit: String, theme: String) {
+        val currentSelectedTheme = SharedPreferencesUtils.getTheme(getApplication())
+        if (currentSelectedTheme != theme) {
+            SharedPreferencesUtils.saveTheme(getApplication(), theme)
+        }
+        if (temperatureUnit != _temperatureUnit.value) {
+            _temperatureUnit.value = temperatureUnit
+            SharedPreferencesUtils.saveTemperatureUnit(getApplication(), temperatureUnit)
+            fetchWeatherData(
+                _location.value!!.latitude,
+                _location.value!!.longitude,
+                _temperatureUnit.value
+            )
+        }
     }
 }

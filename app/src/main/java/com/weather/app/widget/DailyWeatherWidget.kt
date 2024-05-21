@@ -36,12 +36,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.weather.app.R
+import com.weather.app.SharedPreferencesUtils
 import com.weather.app.weather.DailyHourlyData
 import com.weather.app.weather.DailyWeatherData
 import com.weather.app.weather.WeatherResponse
@@ -224,7 +226,10 @@ fun HourlyWeatherCard(hourlyData: DailyHourlyData, viewModel: WeatherViewModel) 
 fun SettingsPopup(viewModel: WeatherViewModel) {
     var showModal by remember { mutableStateOf(false) }
     val selectedTemperatureUnit = remember { mutableStateOf(viewModel.temperatureUnit.value) }
-    val expandedState = remember { mutableStateOf(false) }
+    val context = LocalContext.current
+    val selectedTheme = remember { mutableStateOf(SharedPreferencesUtils.getTheme(context)) }
+    val temperatureExpandedState = remember { mutableStateOf(false) }
+    val themeExpandedState = remember { mutableStateOf(false) }
 
     Box(
         modifier = Modifier
@@ -248,12 +253,15 @@ fun SettingsPopup(viewModel: WeatherViewModel) {
                 },
                 text = {
                     Column {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(5.dp)
+                        ) {
                             Text(text = "Temperature unit: ")
                             Column {
                                 Box(
                                     modifier = Modifier
-                                        .clickable { expandedState.value = true }
+                                        .clickable { temperatureExpandedState.value = true }
                                         .border(
                                             1.dp,
                                             Color.Gray,
@@ -271,20 +279,70 @@ fun SettingsPopup(viewModel: WeatherViewModel) {
                                     }
                                 }
                                 DropdownMenu(
-                                    expanded = expandedState.value,
-                                    onDismissRequest = { expandedState.value = false },
+                                    expanded = temperatureExpandedState.value,
+                                    onDismissRequest = { temperatureExpandedState.value = false },
                                 ) {
                                     DropdownMenuItem(text = {
                                         Text("celsius")
                                     }, onClick = {
                                         selectedTemperatureUnit.value = "celsius"
-                                        expandedState.value = false
+                                        temperatureExpandedState.value = false
                                     })
                                     DropdownMenuItem(text = {
                                         Text("fahrenheit")
                                     }, onClick = {
                                         selectedTemperatureUnit.value = "fahrenheit"
-                                        expandedState.value = false
+                                        temperatureExpandedState.value = false
+                                    })
+                                }
+                            }
+                        }
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(5.dp)
+                        ) {
+                            Text(text = "Theme: ")
+                            Column {
+                                Box(
+                                    modifier = Modifier
+                                        .clickable { themeExpandedState.value = true }
+                                        .border(
+                                            1.dp,
+                                            Color.Gray,
+                                            shape = RoundedCornerShape(5.dp)
+                                        )
+                                        .padding(5.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Row {
+                                        Text(text = selectedTheme.value)
+                                        Icon(
+                                            imageVector = Icons.Outlined.KeyboardArrowDown,
+                                            contentDescription = "Dropdown Icon"
+                                        )
+                                    }
+                                }
+                                DropdownMenu(
+                                    expanded = themeExpandedState.value,
+                                    onDismissRequest = { themeExpandedState.value = false },
+                                ) {
+                                    DropdownMenuItem(text = {
+                                        Text("auto")
+                                    }, onClick = {
+                                        selectedTheme.value = "auto"
+                                        themeExpandedState.value = false
+                                    })
+                                    DropdownMenuItem(text = {
+                                        Text("dark")
+                                    }, onClick = {
+                                        selectedTheme.value = "dark"
+                                        themeExpandedState.value = false
+                                    })
+                                    DropdownMenuItem(text = {
+                                        Text("light")
+                                    }, onClick = {
+                                        selectedTheme.value = "light"
+                                        themeExpandedState.value = false
                                     })
                                 }
                             }
@@ -297,7 +355,10 @@ fun SettingsPopup(viewModel: WeatherViewModel) {
                 confirmButton = {
                     TextButton(
                         onClick = {
-                            viewModel.saveSettings(selectedTemperatureUnit.value)
+                            viewModel.saveSettings(
+                                selectedTemperatureUnit.value,
+                                selectedTheme.value
+                            )
                             showModal = false
                         }
                     ) {

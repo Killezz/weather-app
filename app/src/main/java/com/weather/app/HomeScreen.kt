@@ -26,14 +26,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.weather.app.weather.WeatherViewModel
 import com.weather.app.widget.DailyWeather
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun HomeScreen() {
-    val viewModel: WeatherViewModel = viewModel()
+fun HomeScreen(viewModel: WeatherViewModel) {
     val weatherData by viewModel.weatherData.observeAsState()
     var permissionsGranted by remember { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
@@ -58,13 +56,11 @@ fun HomeScreen() {
                 Manifest.permission.ACCESS_COARSE_LOCATION
             )
         )
-    }
-
-    LaunchedEffect(Unit) {
         viewModel.snackbarManager.snackbarFlow.collect { message ->
             snackbarHostState.showSnackbar(message, duration = SnackbarDuration.Long)
         }
     }
+
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -113,4 +109,3 @@ fun HomeScreen() {
         }
     )
 }
-
