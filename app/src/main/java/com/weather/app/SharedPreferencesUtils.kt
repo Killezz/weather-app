@@ -34,9 +34,17 @@ object SharedPreferencesUtils {
 
     fun registerOnSharedPreferenceChangeListener(
         context: Context,
-        listener: SharedPreferences.OnSharedPreferenceChangeListener
+        listener: SharedPreferences.OnSharedPreferenceChangeListener,
     ) {
         val prefs = context.getSharedPreferences(NAME, Context.MODE_PRIVATE)
         prefs.registerOnSharedPreferenceChangeListener(listener)
+    }
+
+    fun unregisterOnSharedPreferenceChangeListener(
+        context: Context,
+        listener: SharedPreferences.OnSharedPreferenceChangeListener,
+    ) {
+        val prefs = context.getSharedPreferences(NAME, Context.MODE_PRIVATE)
+        prefs.unregisterOnSharedPreferenceChangeListener(listener)
     }
 }

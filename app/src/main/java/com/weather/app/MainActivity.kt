@@ -8,6 +8,7 @@ import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -23,13 +24,7 @@ class MainActivity : ComponentActivity() {
         val context = this
 
         setContent {
-            var theme by remember {
-                mutableStateOf(
-                    SharedPreferencesUtils.getTheme(
-                        context
-                    )
-                )
-            }
+            var theme by remember { mutableStateOf(SharedPreferencesUtils.getTheme(context)) }
 
             val listener =
                 SharedPreferences.OnSharedPreferenceChangeListener { sharedPreferences, key ->
@@ -38,7 +33,16 @@ class MainActivity : ComponentActivity() {
                         theme = newTheme
                     }
                 }
-            SharedPreferencesUtils.registerOnSharedPreferenceChangeListener(context, listener)
+
+            DisposableEffect(Unit) {
+                SharedPreferencesUtils.registerOnSharedPreferenceChangeListener(context, listener)
+                onDispose {
+                    SharedPreferencesUtils.unregisterOnSharedPreferenceChangeListener(
+                        context,
+                        listener
+                    )
+                }
+            }
 
             val darkTheme = when (theme) {
                 "dark" -> true

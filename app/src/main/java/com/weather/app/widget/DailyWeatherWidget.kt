@@ -201,6 +201,7 @@ fun HourlyWeatherCard(hourlyData: DailyHourlyData, viewModel: WeatherViewModel) 
             Text(
                 text = "${hourlyData.temperature}°",
                 fontSize = 30.sp, fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
                 modifier = Modifier.padding(top = 5.dp, bottom = 10.dp)
             )
             Image(
@@ -212,6 +213,7 @@ fun HourlyWeatherCard(hourlyData: DailyHourlyData, viewModel: WeatherViewModel) 
             )
             Text(
                 text = "${hourlyData.windSpeedMs} m/s",
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
                 fontSize = 20.sp
             )
         }

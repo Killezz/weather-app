@@ -15,6 +15,7 @@ import androidx.core.view.WindowCompat
 private val DarkColorScheme = darkColorScheme(
     primary = Color.LightGray,
     primaryContainer = ActiveCardDark,
+    onPrimaryContainer = Color.White,
     secondaryContainer = CardDark,
     tertiaryContainer = TopSectionDark,
     background = BackgroundDark,
@@ -25,11 +26,13 @@ private val DarkColorScheme = darkColorScheme(
 private val LightColorScheme = lightColorScheme(
     primary = Color.Black,
     primaryContainer = ActiveCardLight,
+    onPrimaryContainer = Color.Black,
     secondaryContainer = CardLight,
     tertiaryContainer = TopSectionLight,
     background = BackgroundLight,
     onBackground = Color.Black,
-    outline = OutlineLight
+    outline = OutlineLight,
+    onSurface = Color.Black
 )
 
 @Composable
