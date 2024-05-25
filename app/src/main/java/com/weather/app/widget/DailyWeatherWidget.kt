@@ -25,6 +25,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -58,7 +59,7 @@ fun DailyWeather(weatherData: WeatherResponse) {
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
-                .background(Color(230, 242, 252, 255))
+                .background(MaterialTheme.colorScheme.tertiaryContainer)
                 .padding(all = 20.dp),
         ) {
             viewModel.CurrentCity(
@@ -127,15 +128,10 @@ fun DailyWeatherRow(data: WeatherResponse, viewModel: WeatherViewModel) {
 fun WeatherCard(weatherData: DailyWeatherData, viewModel: WeatherViewModel, id: Int) {
     Card(
         modifier = Modifier
-            .border(1.dp, Color.Gray, RoundedCornerShape(10))
+            .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(10))
             .clickable { viewModel.activeDay.intValue = id },
         colors = CardDefaults.cardColors(
-            containerColor = if (id == viewModel.activeDay.intValue) Color(
-                230,
-                242,
-                252,
-                255
-            ) else Color.White
+            containerColor = if (id == viewModel.activeDay.intValue) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.secondaryContainer
         ),
     ) {
         Column(
@@ -143,7 +139,7 @@ fun WeatherCard(weatherData: DailyWeatherData, viewModel: WeatherViewModel, id: 
         ) {
             Text(
                 text = weatherData.day,
-                color = Color.Black,
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
                 fontSize = 18.sp
             )
             Row(
@@ -178,9 +174,9 @@ fun WeatherCard(weatherData: DailyWeatherData, viewModel: WeatherViewModel, id: 
 fun HourlyWeatherCard(hourlyData: DailyHourlyData, viewModel: WeatherViewModel) {
     Card(
         modifier = Modifier
-            .border(1.dp, Color.Gray, RoundedCornerShape(10)),
+            .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(10)),
         colors = CardDefaults.cardColors(
-            containerColor = Color.White,
+            containerColor = MaterialTheme.colorScheme.primaryContainer,
         ),
     ) {
         Column(
@@ -189,7 +185,7 @@ fun HourlyWeatherCard(hourlyData: DailyHourlyData, viewModel: WeatherViewModel) 
         ) {
             Text(
                 text = hourlyData.hour,
-                color = Color.Black,
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
                 fontSize = 18.sp
             )
             Image(
@@ -264,7 +260,7 @@ fun SettingsPopup(viewModel: WeatherViewModel) {
                                         .clickable { temperatureExpandedState.value = true }
                                         .border(
                                             1.dp,
-                                            Color.Gray,
+                                            MaterialTheme.colorScheme.outline,
                                             shape = RoundedCornerShape(5.dp)
                                         )
                                         .padding(5.dp),
@@ -308,7 +304,7 @@ fun SettingsPopup(viewModel: WeatherViewModel) {
                                         .clickable { themeExpandedState.value = true }
                                         .border(
                                             1.dp,
-                                            Color.Gray,
+                                            MaterialTheme.colorScheme.outline,
                                             shape = RoundedCornerShape(5.dp)
                                         )
                                         .padding(5.dp),
@@ -362,7 +358,7 @@ fun SettingsPopup(viewModel: WeatherViewModel) {
                             showModal = false
                         }
                     ) {
-                        Text("Save")
+                        Text("Save", color = MaterialTheme.colorScheme.onBackground)
                     }
                 },
                 dismissButton = {
@@ -371,7 +367,7 @@ fun SettingsPopup(viewModel: WeatherViewModel) {
                             showModal = false
                         }
                     ) {
-                        Text("Close")
+                        Text("Close", color = MaterialTheme.colorScheme.onBackground)
                     }
                 }
             )
